@@ -41,9 +41,10 @@ jobs:
           fi
           unzip -o "$ZIP" -d /tmp/vivendo
           cp -a /tmp/vivendo/. .
+          sed -i 's/WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);/WebView.setWebContentsDebuggingEnabled(false);/' android/app/src/main/java/com/cristianoaguilar/vivendoopassado/MainActivity.java
 
       - name: Instalar ferramentas Android
-        run: |sed -i 's/WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);/WebView.setWebContentsDebuggingEnabled(false);/' android/app/src/main/java/com/cristianoaguilar/vivendoopassado/MainActivity.java
+        run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Preparar arquivos web
