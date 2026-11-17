@@ -92,7 +92,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
+        WebView.setWebContentsDebuggingEnabled(false);
         webView.loadUrl(APP_URL);
     }
 
