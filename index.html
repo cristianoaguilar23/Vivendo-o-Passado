@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#090611">
+  <meta name="description" content="Vivendo o Passado — sua coleção pessoal de filmes, desenhos e séries clássicas.">
+  <meta name="application-name" content="Vivendo o Passado">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Vivendo o Passado · 1.3</title>
+</head>
+<body>
+  <div class="ambient"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Vivendo o Passado - início">
+      <img src="assets/icon-192.png" alt="Logo Vivendo o Passado">
+      <span>VIVENDO <b>O PASSADO</b></span>
+    </a>
+    <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar filmes, desenhos e séries..." aria-label="Buscar no catálogo"></label>
+    <button class="btn outline" id="addOpen">＋ Adicionar</button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">UMA VIAGEM PELAS DÉCADAS</p>
+        <h1>Reviva histórias<br><em>que marcaram época.</em></h1>
+        <p class="hero-text">Seu cantinho de nostalgia. Organize sua coleção, encontre seus clássicos e continue de onde parou.</p>
+        <div class="hero-actions"><button class="btn primary" id="browseBtn">Explorar coleção <span>→</span></button><button class="btn ghost" id="heroAdd">Adicionar vídeo</button></div>
+      <div class="developer-stamp"><span class="stamp-star">✦</span><span>DESENVOLVIDO POR</span><strong>CRISTIANO AGUILAR</strong><span class="stamp-star">✦</span></div>
+      </div>
+      <div class="hero-logo"><img src="assets/logo-original.jpg" alt="Logo oficial Vivendo o Passado"></div>
+      <div class="hero-glow"></div>
+    </section>
+
+    <nav class="quicknav" aria-label="Navegação por categoria">
+      <button class="chip active" data-filter="all">Tudo</button>
+      <button class="chip" data-filter="1970">Anos 70</button>
+      <button class="chip" data-filter="1980">Anos 80</button>
+      <button class="chip" data-filter="1990">Anos 90</button>
+      <button class="chip" data-filter="2000">Anos 2000</button>
+      <button class="chip" data-filter="Filme clássico">Filmes</button>
+      <button class="chip" data-filter="Comédia">Comédias</button>
+      <button class="chip" data-filter="Desenho">Desenhos</button>
+      <button class="chip" data-filter="Série">Séries</button>
+      <button class="chip" data-filter="favorites">♥ Favoritos</button>
+    </nav>
+
+    <section class="section-heading" id="collection">
+      <div><p class="eyebrow">SEU ACERVO</p><h2 id="sectionTitle">Minha coleção</h2></div>
+      <div class="collection-tools"><span class="count" id="itemCount">0 títulos</span><button class="text-button" id="exportBtn">Exportar catálogo</button><button class="text-button" id="importBtn">Importar catálogo</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+    </section>
+    <section id="catalog" class="catalog">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-disc">♫</div><h3>Sua máquina do tempo está pronta.</h3>
+        <p>Adicione vídeos que você possui ou fontes online autorizadas para começar a montar seu acervo.</p>
+        <button class="btn primary" id="emptyAdd">＋ Adicionar primeiro título</button>
+      </div>
+    </section>
+
+    <section class="continue-section rail-section" id="continueSection" hidden>
+      <div class="section-heading"><div><p class="eyebrow">RETOME A DIVERSÃO</p><h2>Continue assistindo</h2></div></div>
+      <div id="continueList" class="continue-list"></div>
+    </section>
+    <section class="rail-section" id="favoritesSection" hidden>
+      <div class="section-heading"><div><p class="eyebrow">SEUS PREFERIDOS</p><h2>Favoritos</h2></div></div>
+      <div id="favoritesList" class="continue-list"></div>
+    </section>
+    <section class="rail-section" id="recentSection" hidden>
+      <div class="section-heading"><div><p class="eyebrow">ADICIONADOS POR VOCÊ</p><h2>Adicionados recentemente</h2></div></div>
+      <div id="recentList" class="continue-list"></div>
+    </section>
+  </main>
+
+  <footer><span>VIVENDO O PASSADO</span><span>Seu acervo. Suas lembranças. ❤️</span><span class="developer-footer">✦ DESENVOLVIDO POR <b>CRISTIANO AGUILAR</b> ✦</span><span class="small">Reproduza somente conteúdos que você possui ou tem autorização para acessar.</span></footer>
+
+  <dialog id="addDialog" class="dialog">
+    <form method="dialog" class="dialog-head"><div><p class="eyebrow">AMPLIE SEU ACERVO</p><h2>Adicionar conteúdo</h2></div><button class="close" aria-label="Fechar">×</button></form>
+    <label class="field">Categoria
+      <select id="itemCategory"><option>Filme clássico</option><option>Comédia</option><option>Desenho</option><option>Série</option><option>Terror</option><option>Aventura</option><option>Ficção científica</option><option>Minha coleção</option></select>
+    </label>
+    <label class="field">Década
+      <select id="itemDecade"><option value="">Não informar</option><option value="1970">Anos 70</option><option value="1980">Anos 80</option><option value="1990">Anos 90</option><option value="2000">Anos 2000</option></select>
+    </label>
+    <div class="tabs"><button class="tab active" data-tab="filePane">Arquivo do dispositivo</button><button class="tab" data-tab="urlPane">Fonte online autorizada</button></div>
+    <div id="filePane" class="pane active">
+      <label class="dropzone"><span class="upload-icon">＋</span><b>Escolha um vídeo</b><small>MP4, WebM e outros formatos compatíveis com seu navegador</small><input id="fileInput" type="file" accept="video/*" multiple></label>
+      <p class="hint">Os arquivos são guardados neste dispositivo. Vídeos grandes ocupam espaço e a disponibilidade depende do armazenamento do Android/navegador.</p>
+    </div>
+    <div id="urlPane" class="pane">
+      <label class="field">Título<input id="urlTitle" placeholder="Nome do filme, desenho ou série"></label>
+      <label class="field">Endereço direto do vídeo<input id="urlValue" type="url" placeholder="https://..."></label>
+      <label class="field">Endereço da capa (opcional)<input id="urlPoster" type="url" placeholder="https://.../capa.jpg"></label>
+      <label class="field">Descrição (opcional)<textarea id="urlDescription" rows="3" placeholder="Sinopse ou observações sobre este título"></textarea></label>
+      <p class="hint">Use somente links HTTPS diretos de conteúdo que você possui ou tem autorização para acessar. Páginas comuns de streaming, DRM, CORS e codecs podem impedir a reprodução.</p>
+      <button class="btn primary full" id="saveUrl">Adicionar à coleção</button>
+    </div>
+  </dialog>
+
+  <dialog id="detailDialog" class="dialog detail-dialog">
+    <button class="close detail-close" id="detailClose" aria-label="Fechar">×</button>
+    <div id="detailContent"></div>
+  </dialog>
+  <dialog id="playerDialog" class="player-dialog">
+    <button class="close player-close" id="playerClose" aria-label="Fechar">×</button>
+    <video id="videoPlayer" controls playsinline></video>
+    <div class="player-caption" id="playerCaption"></div>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
