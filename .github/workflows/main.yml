@@ -43,7 +43,7 @@ jobs:
           cp -a /tmp/vivendo/. .
 
       - name: Instalar ferramentas Android
-        run: |
+        run: |sed -i 's/WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);/WebView.setWebContentsDebuggingEnabled(false);/' android/app/src/main/java/com/cristianoaguilar/vivendoopassado/MainActivity.java
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Preparar arquivos web
