@@ -1,4 +1,4 @@
-# Vivendo o Passado — versão 1.3 (base web + Android)
+# Vivendo o Passado — versão 1.4 (base web + Android)
 
 Projeto pessoal para organizar e reproduzir uma coleção própria de filmes, comédias, desenhos e séries clássicas. A identidade visual oficial foi preservada: `web/assets/logo-original.jpg`, além dos ícones web e Android derivados da arte enviada.
 

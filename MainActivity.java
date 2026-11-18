@@ -31,6 +31,7 @@ public class MainActivity extends Activity {
 
         getWindow().setStatusBarColor(Color.rgb(9, 6, 17));
         getWindow().setNavigationBarColor(Color.rgb(9, 6, 17));
+        getWindow().getDecorView().setSystemUiVisibility(0);
 
         FrameLayout container = new FrameLayout(this);
         container.setBackgroundColor(Color.rgb(9, 6, 17));
@@ -92,7 +93,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        WebView.setWebContentsDebuggingEnabled(false);
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
         webView.loadUrl(APP_URL);
     }
 
