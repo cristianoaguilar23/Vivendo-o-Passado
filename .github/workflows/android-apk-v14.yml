@@ -2,6 +2,7 @@ name: VOP 1.4 - Gerar APK correto
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - main
@@ -46,7 +47,7 @@ jobs:
 
           cp -a "$ROOT/." "$GITHUB_WORKSPACE/"
 
-          echo "Versao 1.4.0 encontrada e extraida."
+          echo "Projeto 1.4.0 encontrado e extraido."
 
       - name: Preparar Java
         uses: actions/setup-java@v4
@@ -65,13 +66,16 @@ jobs:
           set -euo pipefail
 
           SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+
           SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
 
           test -n "$SDKMANAGER"
-          echo "SDK encontrado: $SDK"
-          echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
 
+          echo "SDK encontrado: $SDK"
+
+          set +o pipefail
           yes | "$SDKMANAGER" --licenses
+          set -o pipefail
 
           "$SDKMANAGER" --install \
             "platform-tools" \
@@ -79,22 +83,38 @@ jobs:
             "build-tools;35.0.0"
 
       - name: Copiar arquivos web
+        shell: bash
         run: |
+          set -euo pipefail
+
           mkdir -p android/app/src/main/assets/www
+
           cp -R web/. android/app/src/main/assets/www/
 
+          echo "Arquivos do aplicativo copiados."
+
       - name: Verificar catalogo
+        shell: bash
         run: |
+          set -euo pipefail
+
           test -f android/app/src/main/assets/www/index.html
           test -f android/app/src/main/assets/www/catalog.js
+
           echo "Catalogo da versao 1.4 confirmado."
 
       - name: Compilar APK
+        shell: bash
         run: |
+          set -euo pipefail
+
           gradle --no-daemon --stacktrace -p android assembleDebug
 
       - name: Verificar APK
+        shell: bash
         run: |
+          set -euo pipefail
+
           APK="android/app/build/outputs/apk/debug/app-debug.apk"
 
           test -s "$APK"
@@ -103,7 +123,7 @@ jobs:
 
           grep -q "versionName='1.4.0-debug'" /tmp/apk.txt
 
-          echo "APK 1.4.0 validado!"
+          echo "APK 1.4.0 validado com sucesso!"
 
       - name: Publicar APK
         uses: actions/upload-artifact@v4
