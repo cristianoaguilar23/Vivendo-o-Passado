@@ -1,1 +1,89 @@
+name: VOP 1.4 - Gerar APK correto
 
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - 'Vivendo_o_Passado_v1_4_Android.zip'
+      - '.github/workflows/android-apk-v14.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@v4
+
+      - name: Extrair e validar versao 1.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP='Vivendo_o_Passado_v1_4_Android.zip'
+          test -f "$ZIP" || { echo "ERRO: ZIP nao encontrado."; exit 1; }
+          mkdir -p "$RUNNER_TEMP/vop"
+          unzip -q "$ZIP" -d "$RUNNER_TEMP/vop"
+          ROOT="$RUNNER_TEMP/vop/vop_work"
+          test -d "$ROOT" || { echo "ERRO: pasta vop_work nao encontrada."; exit 1; }
+          test "$(tr -d '\r\n' < "$ROOT/VERSION")" = '1.4.0'
+          test -f "$ROOT/web/index.html"
+          test -f "$ROOT/web/catalog.js"
+          test -f "$ROOT/android/settings.gradle"
+          test -f "$ROOT/android/app/build.gradle"
+          grep -q "versionName '1.4.0'" "$ROOT/android/app/build.gradle"
+          grep -q 'catalog.js' "$ROOT/web/index.html"
+          rm -rf "$GITHUB_WORKSPACE/android" "$GITHUB_WORKSPACE/web" "$GITHUB_WORKSPACE/scripts"
+          cp -a "$ROOT/." "$GITHUB_WORKSPACE/"
+          echo "Fontes da versao 1.4.0 validadas."
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
+          packages: ''
+
+      - name: Instalar ferramentas Android
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Copiar interface web
+        run: |
+          mkdir -p android/app/src/main/assets/www
+          cp -R web/. android/app/src/main/assets/www/
+          test -f android/app/src/main/assets/www/index.html
+          test -f android/app/src/main/assets/www/catalog.js
+
+      - name: Compilar APK versao 1.4
+        run: gradle --no-daemon --stacktrace -p android assembleDebug
+
+      - name: Verificar versao do APK
+        run: |
+          set -euo pipefail
+          APK='android/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/apk-badging.txt
+          grep -q "versionName='1.4.0-debug'" /tmp/apk-badging.txt
+          echo "APK validado como versao 1.4.0-debug."
+
+      - name: Publicar APK 1.4
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vivendo-o-Passado-v1.4-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
