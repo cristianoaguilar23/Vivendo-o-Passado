@@ -1,0 +1,70 @@
+name: Gerar APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - 'Vivendo_o_Passado_v1_4_Android.zip'
+      - '.github/workflows/android-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar arquivos do repositório
+        uses: actions/checkout@v4
+
+      - name: Extrair projeto da versão 1.4
+        run: |
+          test -f Vivendo_o_Passado_v1_4_Android.zip
+          mkdir -p /tmp/vop-extract
+          unzip -q Vivendo_o_Passado_v1_4_Android.zip -d /tmp/vop-extract
+          if [ -d /tmp/vop-extract/vop_work ]; then
+            cp -a /tmp/vop-extract/vop_work/. "$GITHUB_WORKSPACE/"
+          else
+            echo 'A pasta vop_work não foi encontrada dentro do ZIP.'
+            exit 1
+          fi
+          test -d web
+          test -d android
+          test -f android/settings.gradle
+          test -f web/index.html
+
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Preparar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar plataforma e ferramentas Android
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Copiar a plataforma web para o aplicativo
+        run: |
+          mkdir -p android/app/src/main/assets/www
+          cp -R web/. android/app/src/main/assets/www/
+
+      - name: Compilar APK de teste
+        run: gradle --no-daemon --stacktrace -p android assembleDebug
+
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vivendo-o-Passado-Android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
