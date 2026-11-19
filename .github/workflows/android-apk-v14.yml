@@ -106,9 +106,22 @@ jobs:
       - name: Compilar APK
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
 
-          gradle --no-daemon --stacktrace -p android assembleDebug
+          gradle --no-daemon --stacktrace --info -p android assembleDebug 2>&1 | tee build.log
+
+          RESULT=${PIPESTATUS[0]}
+
+          exit "$RESULT"
+
+      - name: Salvar log de diagnostico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: VOP-1.4-LOG-ERRO
+          path: build.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Verificar APK
         shell: bash
