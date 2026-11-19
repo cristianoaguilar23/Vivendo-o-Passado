@@ -1,147 +1,185 @@
 name: VOP 1.4 - Gerar APK correto
 
 on:
-  workflow_dispatch:
+workflow_dispatch:
 
-  push:
-    branches:
-      - main
-      - master
-    paths:
-      - 'Vivendo_o_Passado_v1_4_Android.zip'
-      - '.github/workflows/android-apk-v14.yml'
+push:
+branches:
+- main
+- master
+paths:
+- 'Vivendo_o_Passado_v1_4_Android.zip'
+- '.github/workflows/android-apk-v14.yml'
 
 permissions:
-  contents: read
+contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+build:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Baixar repositorio
-        uses: actions/checkout@v4
+steps:
+  - name: Baixar repositorio
+    uses: actions/checkout@v4
 
-      - name: Extrair projeto 1.4
-        shell: bash
-        run: |
-          set -euo pipefail
+  - name: Extrair projeto 1.4
+    shell: bash
+    run: |
+      set -euo pipefail
+      ZIP="Vivendo_o_Passado_v1_4_Android.zip"
 
-          ZIP="Vivendo_o_Passado_v1_4_Android.zip"
+      test -f "$ZIP"
 
-          test -f "$ZIP"
+      mkdir -p "$RUNNER_TEMP/vop"
 
-          mkdir -p "$RUNNER_TEMP/vop"
+      unzip -q "$ZIP" -d "$RUNNER_TEMP/vop"
 
-          unzip -q "$ZIP" -d "$RUNNER_TEMP/vop"
+      ROOT="$RUNNER_TEMP/vop/vop_work"
 
-          ROOT="$RUNNER_TEMP/vop/vop_work"
+      test -d "$ROOT"
+      test "$(cat "$ROOT/VERSION")" = "1.4.0"
 
-          test -d "$ROOT"
-          test "$(cat "$ROOT/VERSION")" = "1.4.0"
+      test -f "$ROOT/web/index.html"
+      test -f "$ROOT/web/catalog.js"
+      test -f "$ROOT/android/settings.gradle"
+      test -f "$ROOT/android/app/build.gradle"
 
-          test -f "$ROOT/web/index.html"
-          test -f "$ROOT/web/catalog.js"
-          test -f "$ROOT/android/settings.gradle"
-          test -f "$ROOT/android/app/build.gradle"
+      cp -a "$ROOT/." "$GITHUB_WORKSPACE/"
 
-          cp -a "$ROOT/." "$GITHUB_WORKSPACE/"
+      echo "Projeto 1.4.0 encontrado e extraido."
 
-          echo "Projeto 1.4.0 encontrado e extraido."
+  - name: Corrigir geracao do BuildConfig
+    shell: bash
+    run: |
+      set -euo pipefail
 
-      - name: Preparar Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+      python3 - <<'PY'
+      from pathlib import Path
+      import re
 
-      - name: Preparar Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+      arquivo = Path("android/app/build.gradle")
+      conteudo = arquivo.read_text()
 
-      - name: Preparar Android SDK
-        shell: bash
-        run: |
-          set -euo pipefail
+      if re.search(r'\bbuildConfig\s+true\b', conteudo):
+          print("BuildConfig ja esta habilitado.")
+      else:
+          padrao = r'(?m)^android\s*\{\s*$'
+          substituicao = (
+              "android {\n"
+              "    buildFeatures {\n"
+              "        buildConfig true\n"
+              "    }\n"
+          )
 
-          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          novo, quantidade = re.subn(
+              padrao,
+              substituicao,
+              conteudo,
+              count=1
+          )
 
-          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          if quantidade != 1:
+              raise SystemExit(
+                  "ERRO: bloco android nao encontrado no build.gradle."
+              )
 
-          test -n "$SDKMANAGER"
+          arquivo.write_text(novo)
+          print("BuildConfig habilitado com sucesso.")
 
-          echo "SDK encontrado: $SDK"
+      PY
 
-          set +o pipefail
-          yes | "$SDKMANAGER" --licenses
-          set -o pipefail
+      grep -n -A3 "buildFeatures" android/app/build.gradle
 
-          "$SDKMANAGER" --install \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
+  - name: Preparar Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
 
-      - name: Copiar arquivos web
-        shell: bash
-        run: |
-          set -euo pipefail
+  - name: Preparar Gradle
+    uses: gradle/actions/setup-gradle@v4
+    with:
+      gradle-version: '8.9'
 
-          mkdir -p android/app/src/main/assets/www
+  - name: Preparar Android SDK
+    shell: bash
+    run: |
+      set -euo pipefail
+      SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
 
-          cp -R web/. android/app/src/main/assets/www/
+      SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
 
-          echo "Arquivos do aplicativo copiados."
+      test -n "$SDKMANAGER"
 
-      - name: Verificar catalogo
-        shell: bash
-        run: |
-          set -euo pipefail
+      echo "SDK encontrado: $SDK"
 
-          test -f android/app/src/main/assets/www/index.html
-          test -f android/app/src/main/assets/www/catalog.js
+      set +o pipefail
+      yes | "$SDKMANAGER" --licenses
+      set -o pipefail
 
-          echo "Catalogo da versao 1.4 confirmado."
+      "$SDKMANAGER" --install \
+        "platform-tools" \
+        "platforms;android-35" \
+        "build-tools;35.0.0"
 
-      - name: Compilar APK
-        shell: bash
-        run: |
-          set +e
+  - name: Copiar arquivos web
+    shell: bash
+    run: |
+      set -euo pipefail
 
-          gradle --no-daemon --stacktrace --info -p android assembleDebug 2>&1 | tee build.log
+      mkdir -p android/app/src/main/assets/www
 
-          RESULT=${PIPESTATUS[0]}
+      cp -R web/. android/app/src/main/assets/www/
 
-          exit "$RESULT"
+      echo "Arquivos do aplicativo copiados."
 
-      - name: Salvar log de diagnostico
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: VOP-1.4-LOG-ERRO
-          path: build.log
-          if-no-files-found: warn
-          retention-days: 7
+  - name: Verificar catalogo
+    shell: bash
+    run: |
+      set -euo pipefail
 
-      - name: Verificar APK
-        shell: bash
-        run: |
-          set -euo pipefail
+      test -f android/app/src/main/assets/www/index.html
+      test -f android/app/src/main/assets/www/catalog.js
+      echo "Catalogo da versao 1.4 confirmado."
 
-          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+  - name: Compilar APK
+    shell: bash
+    run: |
+      set +e
 
-          test -s "$APK"
+      gradle --no-daemon --stacktrace --info -p android assembleDebug 2>&1 | tee build.log
 
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/apk.txt
+      RESULT=${PIPESTATUS[0]}
 
-          grep -q "versionName='1.4.0-debug'" /tmp/apk.txt
+      exit "$RESULT"
 
-          echo "APK 1.4.0 validado com sucesso!"
+  - name: Salvar log de diagnostico
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: VOP-1.4-LOG-ERRO
+      path: build.log
+      if-no-files-found: warn
+      retention-days: 7
 
-      - name: Publicar APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Vivendo-o-Passado-v1.4-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 14
+  - name: Verificar APK
+    shell: bash
+    run: |
+      set -euo pipefail
+
+      APK="android/app/build/outputs/apk/debug/app-debug.apk"
+
+      test -s "$APK"
+      "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/apk.txt
+
+      grep -q "versionName='1.4.0-debug'" /tmp/apk.txt
+
+      echo "APK 1.4.0 validado com sucesso!"
+
+  - name: Publicar APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: Vivendo-o-Passado-v1.4-APK
+      path: android/app/build/outputs/apk/debug/app-debug.apk
+      if-no-files-found: error
+      retention-days: 14
