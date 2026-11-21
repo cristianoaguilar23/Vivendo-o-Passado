@@ -36,3 +36,6 @@ Também pode publicar os arquivos estáticos em GitHub Pages ou outro host está
 3. Criar uma camada de catálogo compartilhada/sincronizável.
 4. Preparar a versão webOS com navegação por controle remoto e validar no modelo informado.
 5. Criar APK Android e depois suporte a Android TV/Google TV.
+
+
+Versão 1.4.6: atalhos de coleções especiais e cache PWA atualizado, incluindo `catalog.js`.

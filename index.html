@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon-192.png">
   <link rel="stylesheet" href="styles.css">
-  <title>Vivendo o Passado · 1.4</title>
+  <title>Vivendo o Passado · 1.4.7</title>
 </head>
 <body>
   <div class="ambient"></div>
@@ -39,12 +39,25 @@
     </section>
 
     <section class="open-catalog" id="openCatalog">
-      <div class="section-heading"><div><p class="eyebrow">DESCUBRA E REVIVA</p><h2>Catálogo gratuito</h2><p class="catalog-note">Obras com indicação de domínio público ou licença aberta, encontradas no Internet Archive.</p></div><button class="text-button" id="refreshOpenCatalog">Atualizar catálogo ↻</button></div>
+      <div class="section-heading"><div><p class="eyebrow">DESCUBRA E REVIVA</p><h2>Catálogo gratuito</h2><p class="catalog-note">Obras com indicação de domínio público ou licença aberta, encontradas no Internet Archive.</p></div><div class="catalog-header-actions"><button class="text-button" id="showOpenFavorites" type="button" aria-pressed="false">♥ Meus favoritos (0)</button><button class="text-button" id="refreshOpenCatalog">Atualizar catálogo ↻</button></div></div>
+      <div class="special-collections" aria-label="Coleções especiais">
+        <p class="special-label">✦ COLEÇÕES ESPECIAIS</p>
+        <div class="special-collection-list">
+          <button class="special-collection" type="button" data-special-term="silent film" data-special-category="movie" data-special-decade="all"><span>🎞️</span><b>Cinema mudo</b><small>Os primeiros clássicos</small></button>
+          <button class="special-collection" type="button" data-special-term="classic cartoon" data-special-category="animation" data-special-decade="all"><span>🐭</span><b>Desenhos antigos</b><small>Animações clássicas</small></button>
+          <button class="special-collection" type="button" data-special-term="science fiction" data-special-category="movie" data-special-decade="all"><span>🚀</span><b>Ficção científica</b><small>Viagens e outros mundos</small></button>
+          <button class="special-collection" type="button" data-special-term="horror classic" data-special-category="movie" data-special-decade="all"><span>🦇</span><b>Clássicos do terror</b><small>Suspense de outras épocas</small></button>
+          <button class="special-collection" type="button" data-special-term="documentary history" data-special-category="all" data-special-decade="all"><span>📽️</span><b>Memória histórica</b><small>Registros e documentários</small></button>
+        </div>
+      </div>
+      <div class="open-catalog-search" role="search"><input id="openCatalogSearch" type="search" placeholder="Buscar filmes, desenhos, séries…" aria-label="Buscar no catálogo gratuito"><button id="clearOpenCatalogSearch" class="text-button" type="button" hidden>Limpar</button></div>
       <div class="catalog-tabs" role="group" aria-label="Categorias do catálogo aberto">
         <button class="catalog-tab active" data-open-category="all">Destaques</button><button class="catalog-tab" data-open-category="movie">Filmes</button><button class="catalog-tab" data-open-category="animation">Animações</button><button class="catalog-tab" data-open-category="series">Séries e TV</button><button class="catalog-tab" data-open-category="anime">Animes</button>
       </div>
+      <div class="catalog-decade-tabs" role="group" aria-label="Filtrar por década"><span>Década:</span><button class="catalog-decade active" data-open-decade="all" type="button">Todas</button><button class="catalog-decade" data-open-decade="1970" type="button">Anos 70</button><button class="catalog-decade" data-open-decade="1980" type="button">Anos 80</button><button class="catalog-decade" data-open-decade="1990" type="button">Anos 90</button><button class="catalog-decade" data-open-decade="2000" type="button">Anos 2000</button></div>
       <div id="openCatalogStatus" class="catalog-status" role="status">Carregando títulos do catálogo aberto…</div>
       <div id="openCatalogGrid" class="open-catalog-grid"></div>
+      <div class="catalog-more-wrap"><button id="loadMoreOpenCatalog" class="btn ghost" type="button" hidden>Carregar mais títulos</button></div>
       <p class="catalog-disclaimer">Disponibilidade e direitos podem variar por item e país. Confira a licença e as condições na página original antes de reproduzir, compartilhar ou redistribuir. O catálogo é fornecido por terceiros e depende de conexão com a internet.</p>
     </section>
 

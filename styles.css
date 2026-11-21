@@ -90,3 +90,32 @@ body{padding-bottom:env(safe-area-inset-bottom)}
  .hero-logo img{width:min(68vw,260px);height:auto;max-height:none;object-fit:contain}
  .open-catalog{margin-top:22px}.open-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 }
+
+/* V1.4.2: paginação do catálogo aberto */
+.catalog-more-wrap{display:flex;justify-content:center;padding:18px 0 4px}.catalog-more-wrap button[hidden]{display:none}.catalog-more-wrap button:disabled{opacity:.6;cursor:wait}
+
+/* V1.4.3: busca remota no catálogo aberto */
+.open-catalog-search{display:flex;align-items:center;gap:10px;max-width:620px;margin:14px 0 2px}.open-catalog-search input{flex:1;min-width:0;height:44px;padding:0 15px;border:1px solid var(--line);border-radius:12px;background:#ffffff0b;color:var(--text);font:500 14px 'DM Sans';outline:none}.open-catalog-search input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #35e8ff18}.open-catalog-search input::placeholder{color:var(--muted)}.open-catalog-search button[hidden]{display:none}
+
+
+/* V1.4.4: filtros do catálogo aberto por década */
+.catalog-decade-tabs{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:2px 0 12px;color:var(--muted);font-size:12px}.catalog-decade{border:1px solid var(--line);background:#ffffff08;color:var(--text);border-radius:18px;padding:7px 12px;font:600 11px 'DM Sans';cursor:pointer}.catalog-decade.active{border-color:var(--cyan);background:#35e8ff18;color:var(--cyan)}
+
+
+/* V1.4.5: tela de detalhes do catálogo aberto */
+.detail-dialog{max-width:680px;width:calc(100% - 28px);max-height:88vh;overflow:auto;padding:26px;background:#151020;color:var(--text);border:1px solid var(--line);border-radius:18px}
+.detail-dialog::backdrop{background:#05030bd9;backdrop-filter:blur(5px)}
+.detail-title{font:700 25px 'Space Grotesk';margin:4px 44px 16px 0;line-height:1.2}
+.detail-poster{display:block;width:132px;max-height:198px;object-fit:cover;border-radius:10px;margin:0 0 16px;border:1px solid var(--line)}
+.detail-meta-line{font-size:13px;color:var(--muted);line-height:1.5;margin:7px 0}.detail-meta-line strong{color:var(--text)}
+.detail-description{margin:18px 0}.detail-description h3{font:600 15px 'Space Grotesk';margin:0 0 7px}.detail-description p,.detail-loading,.detail-warning{font-size:13px;line-height:1.6;color:var(--muted);white-space:normal}
+.detail-warning{color:#ffd28a}.detail-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.detail-actions .btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}.detail-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:480px){.detail-dialog{padding:22px 18px}.detail-title{font-size:21px}.detail-actions{flex-direction:column}.detail-actions .btn{width:100%}}
+
+
+/* V1.4.6: atalhos para coleções temáticas */
+.special-collections{margin:16px 0 10px}.special-label{font-size:10px;letter-spacing:2px;color:var(--cyan);font-weight:700;margin:0 0 10px}.special-collection-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.special-collection{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:106px;padding:13px;text-align:left;border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,#21172f,#100d1a);color:var(--text);cursor:pointer;transition:border-color .2s,transform .2s}.special-collection:hover,.special-collection:focus-visible{border-color:var(--cyan);transform:translateY(-2px);outline:2px solid #35e8ff55;outline-offset:2px}.special-collection span{font-size:21px}.special-collection b{font:600 12px 'Space Grotesk'}.special-collection small{font-size:10px;color:var(--muted)}
+
+/* V1.4.7: favoritos locais do catálogo aberto */
+.catalog-header-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}.favorite-badge{display:inline-block;margin-top:7px;color:#ff8ab5;font-size:10px;font-weight:700}.detail-actions .btn{min-height:40px}
+@media(max-width:650px){.catalog-header-actions{width:100%;justify-content:flex-start}.section-heading{align-items:flex-start;flex-wrap:wrap}}
