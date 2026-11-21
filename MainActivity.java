@@ -3,10 +3,14 @@ package com.cristianoaguilar.vivendoopassado;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Gravity;
+import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -24,6 +28,9 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
+    private View customView;
+    private WebChromeClient.CustomViewCallback customViewCallback;
+    private int previousOrientation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +79,41 @@ public class MainActivity extends Activity {
         });
 
         webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                if (customView != null) { callback.onCustomViewHidden(); return; }
+                customView = view;
+                customViewCallback = callback;
+                previousOrientation = getRequestedOrientation();
+                container.setVisibility(View.GONE);
+                FrameLayout fullscreen = new FrameLayout(MainActivity.this);
+                fullscreen.setBackgroundColor(Color.BLACK);
+                fullscreen.addView(view, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+                addContentView(fullscreen, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+                view.setTag(fullscreen);
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            }
+
+            @Override
+            public void onHideCustomView() {
+                if (customView == null) return;
+                View view = customView;
+                customView = null;
+                Object tag = view.getTag();
+                if (tag instanceof View) ((ViewGroup) tag.getParent()).removeView((View) tag);
+                view.setTag(null);
+                container.setVisibility(View.VISIBLE);
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                setRequestedOrientation(previousOrientation);
+                if (customViewCallback != null) customViewCallback.onCustomViewHidden();
+                customViewCallback = null;
+            }
+
             @Override
             public boolean onShowFileChooser(
                     WebView view,
@@ -122,6 +164,12 @@ public class MainActivity extends Activity {
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
+        if (customView != null && webView != null) {
+            webView.evaluateJavascript("document.exitFullscreen && document.exitFullscreen()", null);
+            WebChromeClient chrome = null;
+            onHideFullscreenFallback();
+            return;
+        }
         if (webView != null) {
             webView.evaluateJavascript(
                     "(function(){const ids=['playerDialog','detailDialog','addDialog'];" +
@@ -138,8 +186,28 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void onHideFullscreenFallback() {
+        if (customView == null) return;
+        View view = customView;
+        customView = null;
+        Object tag = view.getTag();
+        if (tag instanceof View && tag.getParent() instanceof ViewGroup) ((ViewGroup) tag.getParent()).removeView((View) tag);
+        view.setTag(null);
+        if (webView != null && webView.getParent() instanceof View) ((View) webView.getParent()).setVisibility(View.VISIBLE);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setRequestedOrientation(previousOrientation);
+        if (customViewCallback != null) customViewCallback.onCustomViewHidden();
+        customViewCallback = null;
+    }
+
     @Override
     protected void onDestroy() {
+        if (customView != null) {
+            if (webView != null && webView.getWebChromeClient() != null) {
+                // The WebView will be destroyed immediately after this activity callback.
+            }
+            customView = null;
+        }
         if (filePathCallback != null) {
             filePathCallback.onReceiveValue(null);
             filePathCallback = null;

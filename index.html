@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon-192.png">
   <link rel="stylesheet" href="styles.css">
-  <title>Vivendo o Passado · 1.4.7</title>
+  <title>Vivendo o Passado · 1.5.1</title>
 </head>
 <body>
   <div class="ambient"></div>
@@ -26,20 +26,12 @@
   </header>
 
   <main>
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">UMA VIAGEM PELAS DÉCADAS</p>
-        <h1>Reviva histórias<br><em>que marcaram época.</em></h1>
-        <p class="hero-text">Seu cantinho de nostalgia. Organize sua coleção, encontre seus clássicos e continue de onde parou.</p>
-        <div class="hero-actions"><button class="btn primary" id="browseBtn">Explorar coleção <span>→</span></button><button class="btn ghost" id="heroAdd">Adicionar vídeo</button></div>
-      <div class="developer-stamp"><span class="stamp-star">✦</span><span>DESENVOLVIDO POR</span><strong>CRISTIANO AGUILAR</strong><span class="stamp-star">✦</span></div>
-      </div>
-      <div class="hero-logo"><img src="assets/logo-original.jpg" alt="Logo oficial Vivendo o Passado"></div>
-      <div class="hero-glow"></div>
-    </section>
-
     <section class="open-catalog" id="openCatalog">
-      <div class="section-heading"><div><p class="eyebrow">DESCUBRA E REVIVA</p><h2>Catálogo gratuito</h2><p class="catalog-note">Obras com indicação de domínio público ou licença aberta, encontradas no Internet Archive.</p></div><div class="catalog-header-actions"><button class="text-button" id="showOpenFavorites" type="button" aria-pressed="false">♥ Meus favoritos (0)</button><button class="text-button" id="refreshOpenCatalog">Atualizar catálogo ↻</button></div></div>
+      <div class="section-heading"><div><p class="eyebrow">ESCOLHIDOS PARA VOCÊ</p><h2>Em destaque para assistir</h2><p class="catalog-note">Uma vitrine de clássicos e raridades. Abra um título para conferir a obra, a licença e se existe vídeo reproduzível.</p></div><div class="catalog-header-actions"><button class="text-button" id="showOpenFavorites" type="button" aria-pressed="false">♥ Meus favoritos (0)</button><button class="text-button" id="refreshOpenCatalog">Atualizar catálogo ↻</button></div></div>
+      <section class="streaming-home" aria-label="Vitrine de filmes clássicos">
+        <div class="streaming-intro"><span class="streaming-kicker">SUA MÁQUINA DO TEMPO</span><h2>Uma seleção para matar a saudade</h2><p>Escolha um clássico para consultar no catálogo. A disponibilidade para assistir é verificada individualmente.</p></div>
+        <div id="streamingRails"></div>
+      </section>
       <div class="special-collections" aria-label="Coleções especiais">
         <p class="special-label">✦ COLEÇÕES ESPECIAIS</p>
         <div class="special-collection-list">
@@ -60,6 +52,20 @@
       <div class="catalog-more-wrap"><button id="loadMoreOpenCatalog" class="btn ghost" type="button" hidden>Carregar mais títulos</button></div>
       <p class="catalog-disclaimer">Disponibilidade e direitos podem variar por item e país. Confira a licença e as condições na página original antes de reproduzir, compartilhar ou redistribuir. O catálogo é fornecido por terceiros e depende de conexão com a internet.</p>
     </section>
+
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">UMA VIAGEM PELAS DÉCADAS</p>
+        <h1>Reviva histórias<br><em>que marcaram época.</em></h1>
+        <p class="hero-text">Seu cantinho de nostalgia. Organize sua coleção, encontre seus clássicos e continue de onde parou.</p>
+        <div class="hero-actions"><button class="btn primary" id="browseBtn">Explorar coleção <span>→</span></button><button class="btn ghost" id="heroAdd">Adicionar vídeo</button></div>
+      <div class="developer-stamp"><span class="stamp-star">✦</span><span>DESENVOLVIDO POR</span><strong>CRISTIANO AGUILAR</strong><span class="stamp-star">✦</span></div>
+      </div>
+      <div class="hero-logo"><img src="assets/logo-original.jpg" alt="Logo oficial Vivendo o Passado"></div>
+      <div class="hero-glow"></div>
+    </section>
+
 
     <nav class="quicknav" aria-label="Navegação por categoria">
       <button class="chip active" data-filter="all">Tudo</button>
@@ -130,9 +136,8 @@
     <div id="detailContent"></div>
   </dialog>
   <dialog id="playerDialog" class="player-dialog">
-    <button class="close player-close" id="playerClose" aria-label="Fechar">×</button>
+    <div class="player-toolbar"><span id="playerCaption"></span><div><button class="player-action" id="playerFullscreen" type="button">⛶ Tela cheia</button><button class="close player-close" id="playerClose" aria-label="Fechar">×</button></div></div>
     <video id="videoPlayer" controls playsinline></video>
-    <div class="player-caption" id="playerCaption"></div>
   </dialog>
   <div id="toast" class="toast" role="status"></div>
   <script src="app.js"></script>
