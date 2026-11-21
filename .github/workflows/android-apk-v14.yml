@@ -1,13 +1,11 @@
-name: VOP 1.4.7 - Gerar APK correto
+name: VOP 1.4.8 - Catálogo corrigido e gerar APK
 
 'on':
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
     paths:
-      - 'Vivendo_o_Passado_v1_4_7_FAVORITOS.zip'
+      - 'Vivendo_o_Passado_v1_4_8_CATALOGO_CORRIGIDO.zip'
       - '.github/workflows/android-apk-v14.yml'
 
 permissions:
@@ -17,29 +15,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Baixar repositorio
+      - name: Baixar repositório
         uses: actions/checkout@v4
 
-      - name: Extrair e validar projeto 1.4.7
+      - name: Extrair projeto 1.4.8
         shell: bash
         run: |
           set -euo pipefail
-          ZIP="Vivendo_o_Passado_v1_4_7_FAVORITOS.zip"
+          ZIP="Vivendo_o_Passado_v1_4_8_CATALOGO_CORRIGIDO.zip"
           test -s "$ZIP"
-          mkdir -p "$RUNNER_TEMP/vop147"
-          unzip -q "$ZIP" -d "$RUNNER_TEMP/vop147"
-          ROOT="$RUNNER_TEMP/vop147"
-          test "$(cat "$ROOT/VERSION")" = "1.4.7"
+          mkdir -p "$RUNNER_TEMP/vop148"
+          unzip -q "$ZIP" -d "$RUNNER_TEMP/vop148"
+          ROOT="$RUNNER_TEMP/vop148"
+          test "$(cat "$ROOT/VERSION")" = "1.4.8"
           test -f "$ROOT/web/index.html"
           test -f "$ROOT/web/catalog.js"
-          test -f "$ROOT/android/settings.gradle"
           test -f "$ROOT/android/app/build.gradle"
-          test -f "$ROOT/.github/workflows/android-apk.yml"
-          rm -rf android web scripts
-          cp -a "$ROOT/android" .
-          cp -a "$ROOT/web" .
-          if [ -d "$ROOT/scripts" ]; then cp -a "$ROOT/scripts" .; fi
-          echo "Projeto 1.4.7 extraido e validado."
+          cp -a "$ROOT/." "$GITHUB_WORKSPACE/"
+          echo "Projeto 1.4.8 extraído e validado."
 
       - name: Preparar Java 17
         uses: actions/setup-java@v4
@@ -52,55 +45,51 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Instalar componentes Android SDK
+      - name: Preparar Android SDK
         shell: bash
         run: |
           set -euo pipefail
-          SDKMANAGER="$(find "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
           test -n "$SDKMANAGER"
           set +o pipefail
           yes | "$SDKMANAGER" --licenses >/dev/null
           set -o pipefail
           "$SDKMANAGER" --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Copiar arquivos web para o aplicativo
+      - name: Preparar arquivos web no Android
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p android/app/src/main/assets/www
           cp -R web/. android/app/src/main/assets/www/
-          test -f android/app/src/main/assets/www/index.html
-          test -f android/app/src/main/assets/www/catalog.js
+          test -s android/app/src/main/assets/www/index.html
+          test -s android/app/src/main/assets/www/catalog.js
+          grep -q 'Catálogo aberto — Vivendo o Passado 1.4.8' android/app/src/main/assets/www/catalog.js
 
-      - name: Compilar APK 1.4.7
+      - name: Compilar APK
         shell: bash
-        run: gradle --no-daemon --stacktrace -p android assembleDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace -p android assembleDebug 2>&1 | tee build-1.4.8.log
 
-      - name: Validar versao do APK
+      - name: Validar versão e tamanho do APK
         shell: bash
         run: |
           set -euo pipefail
           APK="android/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee apk-info.txt
-          grep -q "versionName='1.4.7-debug'" apk-info.txt
-          echo "APK 1.4.7 validado."
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee apk-badging.txt
+          grep -q "versionName='1.4.8-debug'" apk-badging.txt
+          echo "APK 1.4.8 validado."
 
-      - name: Publicar APK
+      - name: Publicar APK e diagnóstico
         uses: actions/upload-artifact@v4
         with:
-          name: Vivendo-o-Passado-1.4.7-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Vivendo-o-Passado-1.4.8-APK
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            build-1.4.8.log
+            apk-badging.txt
           if-no-files-found: error
           retention-days: 14
-
-      - name: Salvar diagnostico se houver falha
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: VOP-1.4.7-LOG-ERRO
-          path: |
-            android/**/*.log
-            apk-info.txt
-          if-no-files-found: ignore
-          retention-days: 7
