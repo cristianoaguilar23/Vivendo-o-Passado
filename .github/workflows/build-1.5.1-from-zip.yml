@@ -1,6 +1,6 @@
 name: Vivendo o Passado 1.5.1 - APK a partir do ZIP
 
-on:
+'on':
   workflow_dispatch:
   push:
     branches: [main, master]
@@ -23,21 +23,19 @@ jobs:
         run: |
           set -euo pipefail
           ZIP_FILE="Vivendo_o_Passado_v1_5_1_ANIMACOES_NOSTALGICAS.zip"
-          if [ ! -f "$ZIP_FILE" ]; then
-            echo "Arquivo não encontrado: $ZIP_FILE"
-            exit 1
-          fi
+          test -s "$ZIP_FILE"
           mkdir -p "$RUNNER_TEMP/vop151"
           unzip -q "$ZIP_FILE" -d "$RUNNER_TEMP/vop151"
+
           SOURCE_DIR="$RUNNER_TEMP/vop151/vop149"
           if [ ! -d "$SOURCE_DIR/android" ] || [ ! -d "$SOURCE_DIR/web" ]; then
-            echo "O ZIP não contém as pastas android/ e web/ esperadas dentro de vop149/."
-            find "$RUNNER_TEMP/vop151" -maxdepth 3 -type d | sort
+            echo "Não encontrei android/ e web/ dentro de vop149/. Conteúdo extraído:"
+            find "$RUNNER_TEMP/vop151" -maxdepth 4 -type d | sort
             exit 1
           fi
           echo "SOURCE_DIR=$SOURCE_DIR" >> "$GITHUB_ENV"
 
-      - name: Aplicar os arquivos do ZIP sem apagar o histórico do repositório
+      - name: Aplicar os arquivos do ZIP sem apagar o histórico
         shell: bash
         run: |
           set -euo pipefail
@@ -48,9 +46,8 @@ jobs:
           cp -a "$SOURCE_DIR/README.md" "$GITHUB_WORKSPACE/"
           cp -a "$SOURCE_DIR/CHANGELOG_1.5.1.md" "$GITHUB_WORKSPACE/"
           cp -a "$SOURCE_DIR/.github/workflows/android-apk.yml" "$GITHUB_WORKSPACE/.github/workflows/android-apk.yml"
-          echo "Arquivos da versão 1.5.1 preparados."
-          cat "$GITHUB_WORKSPACE/VERSION"
-          grep -n "versionName '1.5.1'" "$GITHUB_WORKSPACE/android/app/build.gradle"
+          test "$(cat VERSION)" = "1.5.1"
+          grep -n "versionName '1.5.1'" android/app/build.gradle
 
       - name: Preparar Java 17
         uses: actions/setup-java@v4
@@ -63,25 +60,31 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Instalar componentes do Android SDK
+      - name: Preparar Android SDK
         shell: bash
         run: |
           set -euo pipefail
-          SDKMANAGER="$(command -v sdkmanager)"
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          test -n "$SDKMANAGER"
           set +o pipefail
           yes | "$SDKMANAGER" --licenses >/dev/null
           set -o pipefail
-          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Copiar a plataforma web para o aplicativo
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p android/app/src/main/assets/www
           cp -R web/. android/app/src/main/assets/www/
+          test -s android/app/src/main/assets/www/index.html
 
       - name: Compilar APK 1.5.1
+        shell: bash
         run: gradle --no-daemon --stacktrace -p android assembleDebug
 
-      - name: Publicar APK para download
+      - name: Validar e publicar APK
         uses: actions/upload-artifact@v4
         with:
           name: Vivendo-o-Passado-1.5.1-APK
