@@ -5,7 +5,7 @@ name: Vivendo o Passado 1.5.2 - APK oficial
   push:
     branches: [main, master]
     paths:
-      - 'Vivendo_o_Passado_v1_5_2_CORRIGIDO.zip'
+      - 'Vivendo_o_Passado_v1_5_2_OFICIAL.zip'
       - '.github/workflows/build-1.5.1-from-zip.yml'
 
 permissions:
@@ -22,8 +22,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ZIP_FILE="Vivendo_o_Passado_v1_5_2_CORRIGIDO.zip"
-          test -s "$ZIP_FILE"
+          ZIP_FILE="Vivendo_o_Passado_v1_5_2_OFICIAL.zip"
+          test -s "$ZIP_FILE" || { echo "ZIP oficial 1.5.2 não encontrado na raiz."; exit 1; }
           mkdir -p "$RUNNER_TEMP/vop152"
           unzip -q "$ZIP_FILE" -d "$RUNNER_TEMP/vop152"
           SOURCE_DIR="$RUNNER_TEMP/vop152/vop149"
@@ -33,6 +33,7 @@ jobs:
           grep -q "versionCode 20" "$SOURCE_DIR/android/app/build.gradle"
           grep -q "versionName '1.5.2'" "$SOURCE_DIR/android/app/build.gradle"
           ! grep -q 'tag.getParent()' "$SOURCE_DIR/android/app/src/main/java/com/cristianoaguilar/vivendoopassado/MainActivity.java"
+          test -s "$SOURCE_DIR/CHANGELOG_1.5.2.md"
           echo "SOURCE_DIR=$SOURCE_DIR" >> "$GITHUB_ENV"
           echo "Pacote validado: $(cat "$SOURCE_DIR/VERSION")"
 
